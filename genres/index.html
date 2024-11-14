@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Music Table</title>
+
+</head>
+<body>
+    <label>Get <input type="number" id="num"> songs!</label>
+    <button>Mix!</button>
+    <select id="g">
+
+        <option value="all">all</option>
+    </select>
+
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>artist</th>
+                <th>title</th>
+                <th>genre</th>
+                <th>releaseYear</th>
+                <th>move</th>
+            </tr>
+        </thead>
+        <tbody id="tablebody"></tbody>
+    </table>
+
+    <script>
+        // JSON data
+        var data = '[{"artist":"Marc", "title":"TheWorks", "genre":"Pop", "releaseYear":"2022"}, {"artist":"James", "title":"Jinx", "genre":"Rock", "releaseYear":"2021"},{"artist":"Jayne", "title":"Roll", "genre":"Blues", "releaseYear":"2023"},{"artist":"Alfie", "title":"MegaGiga", "genre":"Pop", "releaseYear":"2019"},{"artist":"Rick", "title":"Extract", "genre":"Rock", "releaseYear":"2028"},{"artist":"William", "title":"Extract", "genre":"Blues", "releaseYear":"2026"}]';
+        var parsedData = JSON.parse(data);
+
+        console.log(parsedData);
+
+        // Function to populate genre options
+        function populateGenres() {
+            var genres = [...new Set(parsedData.map(item => item.genre))];
+            var select = document.getElementById("g");
+            genres.forEach(item => {
+                
+                var option = document.createElement("option");
+                option.value = item;
+                option.textContent = item;
+                select.appendChild(option);
+            });
+            
+        }
+
+
+        // Function to update the table based on input
+        function updateTable() {
+            var numTracks = document.getElementById("num").value;
+            var genre = document.getElementById("g").value;
+            var tableBody = document.getElementById("tablebody");
+
+            // Clear existing rows
+            tableBody.innerHTML = "";
+
+            // Filter data
+            //filtered data creates an array based on the function you provide it with
+            var filteredData = parsedData.filter(item => genre === "all" || item.genre === genre);
+            var tracksToShow = numTracks >= filteredData.length ? filteredData : filteredData.slice(0, numTracks);
+
+            // Create rows
+
+            
+            // tracksToShow.forEach((item) => {
+                for(let i=0; i<tracksToShow.length;i++){
+                var item = tracksToShow[i];
+                var row = document.createElement("tr");
+
+                // Create ID from uppercase letters of title and artist
+                var id = item.title.charAt(0).toUpperCase() + item.artist.charAt(0).toUpperCase();
+
+
+                row.innerHTML = `
+                    <td>${id}</td>
+                    <td>${item.artist}</td>
+                    <td>${item.title}</td>
+                    <td>${item.genre}</td>
+                    <td>${item.releaseYear}</td>
+                    <td>
+                        <button onclick="moveRow(this, 'up')">UP</button>
+                        <button onclick="moveRow(this, 'down')">DOWN</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+                
+            };
+        }
+
+        
+
+        function moveRow(button, direction){
+            var row = button.closest("tr");
+            if(direction=== "up" && row.previousElementSibling){
+                row.parentNode.insertBefore(row, row.previousElementSibling);
+
+            } else if (direction === "down" && row.nextElementSibling){
+
+                row.parentNode.insertBefore(row.nextElementSibling, row);
+            }
+        }
+
+        document.querySelector("button").addEventListener("click", updateTable);
+        populateGenres();
+       
+    </script>
+</body>
+</html>

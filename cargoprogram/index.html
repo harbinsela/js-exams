@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+
+    div
+    {
+        padding: 10px;
+    }
+    label
+    {
+        width: 200px;
+        display: inline-block;
+    }
+
+
+    #table,th,td{
+        border: 2px solid black;
+        border-collapse: collapse;
+        padding: 8px;
+        
+    }
+
+
+
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Cargo Local Program</h1>
+    </div>
+
+    <div>
+        <label>Sender Address</label>
+        <input type="text" id="send">
+    </div>
+
+    <div>
+        <label>Recieving Address</label>
+        <input type="text" id="reciever">
+    </div>
+
+    <div>
+        <label>Weight</label>
+        <input type="number" id="weight">
+
+    </div>
+
+    <div>
+        <label>Payment Method:</label>
+        <label style="display: inline;">Card</label>
+        <input type="radio" name="way" style="display: inline-block;" id="card">
+        <label style="display: inline;">Cash</label>
+        <input type="radio" name="way" style="display: inline-block;" id="cash">
+    </div>
+
+    <div>
+        <label>Profile ID</label>
+        <input type="text" id="id">
+    </div>
+
+    <div>
+        <button onclick="enter()">Enter</button>
+    </div>
+
+    <h2>Orders Entered</h2>
+    <h3>Total Price <span id="sumprice">0</span></h3>
+
+        <table id="table">
+            <thead>
+                <th>ID</th>
+                <th>Sender Address</th>
+                <th>Recieving Address</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </thead>
+            
+            <tbody id="tablebody">
+    
+            </tbody>
+        </table>
+        <hr>
+        <div id="droppedorders">
+            <h2>Rejected Orders</h2>
+            <ul id="rejectedorders">
+    
+            </ul>
+        </div>
+
+    <script>
+        
+        var jsonData = '[{"address_from":"Partizanska 1", "address_to":"Kliment Ohridski 15", "weight":"3.5", "paid_type":"on_send", "ID":"Id902 90sUsdql3", "delivery": "on_hold"},{"address_from":"Ruzveltova 3", "address_to":"3MUB 43", "weight":"15", "paid_type":"on_receive", "ID":"W8902 90sWmPqLzl3", "delivery": "false"}]'
+        var data = JSON.parse(jsonData);
+        console.log(data)
+
+        for(i=0; i<data.length;i++){
+
+            var addressfrom = data[i].address_from
+            var addressto = data[i].address_to
+            var packageweight = data[i].weight
+            var paymentmethod = data[i].paid_type
+            var id = data[i].ID
+            
+            var idperson = id.toLowerCase().split(" ").join("-")
+            var price
+            var table = document.getElementById("tablebody")
+            var createrow = document.createElement("tr")
+            var realweight = parseInt(packageweight);
+
+            if(realweight <500){
+                price = 500
+            } else if(realweight>500){
+                price = 1200
+            }
+
+            createrow.innerHTML = `
+                <td class="idtable">${idperson}</td>
+                <td>${addressfrom}</td>
+                <td>${addressto}</td>
+                <td>${price}</td>
+                <td><button onclick="accepted(this)" id="o1" class="boba">Accepted</button><br>
+                    <button onclick="rejected(this)" id="o2" class="boba">Rejected</button>
+                    </td>
+            `
+            table.append(createrow)
+
+        }
+
+        function enter(){
+            var sender = document.getElementById("send")
+            var receiver = document.getElementById("reciever")
+            var weight = document.getElementById("weight")
+            var cash = document.getElementById("cash")
+            var card = document.getElementById("card")
+            var id = document.getElementById("id")
+
+            if (sender.value == "" || receiver.value == "" || weight.value == "" || (cash.checked == false && card.checked == false) || id.value == "") {
+                return alert("Fill All The Fields");
+            }
+
+            var novoid = id.value.toLowerCase().split(" ").join("-")
+
+            if(checkID(novoid)){
+                return alert("ID Already Exists");
+            }
+
+
+            var price = 0
+            var realweight = parseInt(weight.value)
+            if (!isNaN(realweight)) {
+                if (realweight < 500) {
+                    price = 500 
+                } else if (realweight > 500) {
+                    price = 1200
+                }
+            } else {
+                alert("Fill the weight section!!")
+                return;
+            }
+
+            var table = document.getElementById("tablebody");
+            var row = document.createElement("tr");
+            row.innerHTML = `
+                <td class='idtable'>${novoid}</td>
+                <td>${sender.value}</td>
+                <td>${receiver.value}</td>
+                <td>${price}</td>
+                <td>
+                    <button onclick='accepted(this)' class="boba">Accepted</button><br>
+                    <button onclick='rejected(this)' class="boba">Rejected</button>
+                </td>
+            `;
+            table.appendChild(row);
+            
+        }
+        
+
+        function accepted(btn){
+
+            var rowtobecolored = btn.parentNode.parentNode
+            
+            rowtobecolored.style.transition = "background-color 0.9s";
+            
+            rowtobecolored.style.backgroundColor = "lightgreen"
+            btn.disabled = true;
+            btn.nextElementSibling.nextElementSibling.disabled = true;
+
+            // Get the current total price from the element
+            var totalprice = document.getElementById("sumprice");
+            var currentTotal = parseInt(totalprice.innerHTML);
+    
+              // Get the price from the current row and add it to the total
+            var tablepricelement = rowtobecolored.children[3].innerHTML;
+            var final = parseInt(tablepricelement);
+    
+            // Update the total price
+            var newTotal = currentTotal + final;
+            totalprice.innerHTML = newTotal;
+            
+        }
+
+        function rejected(btn){
+            var row = btn.parentNode.parentNode
+            
+            
+            console.log(row)
+
+            var myInterval = setInterval(function ()
+            {
+                row.style.opacity = 0.5
+            },200)
+
+            setTimeout(function()
+             {
+                clearInterval(myInterval)
+            var rejectedlist = document.getElementById("rejectedorders")
+            var rejecteditem = document.createElement("li")
+            rejecteditem.innerHTML = row.children[0].innerHTML
+            rejectedlist.append(rejecteditem)
+            row.remove()
+                
+            }, 2000);
+            
+    
+
+        }
+
+        function checkID(id)
+        {
+            var identered = document.getElementsByClassName("idtable")
+            console.log(identered.length)
+            for(i=0;i<identered.length;i++)
+            {
+                if(identered[i].innerHTML===id)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+
+    </script>
+    
+
+</body>
+</html>
